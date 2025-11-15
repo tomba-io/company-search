@@ -1,0 +1,17 @@
+{
+    "actorSpecification": 1,
+    "name": "company-search",
+    "title": "Tomba Company-Search",
+    "description": "Tomba integration for Company Search API.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "meta": {
+        "templateId": "ts-empty"
+    },
+    "dockerfile": "../Dockerfile",
+    "input": "./input_schema.json",
+    "output": "./output_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}

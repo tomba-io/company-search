@@ -1,0 +1,361 @@
+{
+    "title": "Tomba Company Search Input",
+    "description": "Input schema for Tomba Company Search Actor - Find relevant companies aligned with your ideal customer profile using advanced filtering options.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "tombaApiKey": {
+            "title": "Tomba API Key",
+            "type": "string",
+            "description": "Your Tomba API key. Get it from https://app.tomba.io/api",
+            "editor": "textfield",
+            "isSecret": true,
+            "prefill": "ta_xxxx"
+        },
+        "tombaApiSecret": {
+            "title": "Tomba API Secret",
+            "type": "string",
+            "description": "Your Tomba API secret. Get it from https://app.tomba.io/api",
+            "editor": "textfield",
+            "isSecret": true,
+            "prefill": "ts_xxxx"
+        },
+        "query": {
+            "title": "Search Query",
+            "type": "string",
+            "description": "Natural language query to search for companies (e.g., 'technology companies in san francisco')",
+            "editor": "textfield",
+            "example": "technology companies in san francisco",
+            "prefill": "technology companies in san francisco"
+        },
+        "filters": {
+            "title": "Company Filters",
+            "type": "object",
+            "description": "Advanced filters to refine your company search",
+            "editor": "json",
+            "prefill": {
+                "location_city": {
+                    "include": ["san francisco", "new york"]
+                },
+                "industry": {
+                    "include": ["technology", "software"]
+                },
+                "size": {
+                    "include": ["51-200", "201-500"]
+                }
+            },
+            "properties": {
+                "company": {
+                    "title": "Company Name",
+                    "type": "object",
+                    "description": "Filter by company name",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Company names to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Company names to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "location_country": {
+                    "title": "Country",
+                    "type": "object",
+                    "description": "Filter by country using 2-letter ISO country codes (e.g., US, GB, FR, CA, DE)",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Countries to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Countries to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "location_city": {
+                    "title": "City",
+                    "type": "object",
+                    "description": "Filter by city",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Cities to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Cities to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "location_state": {
+                    "title": "State/Region",
+                    "type": "object",
+                    "description": "Filter by state/region",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "States to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "States to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "industry": {
+                    "title": "Industry",
+                    "type": "object",
+                    "description": "Filter by industry",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Industries to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Industries to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "size": {
+                    "title": "Company Size",
+                    "type": "object",
+                    "description": "Filter by company size (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1000+')",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Sizes to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Sizes to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "type": {
+                    "title": "Company Type",
+                    "type": "object",
+                    "description": "Filter by company type",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Types to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Types to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "keywords": {
+                    "title": "Keywords",
+                    "type": "object",
+                    "description": "Filter by keywords",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Keywords to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Keywords to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "founded": {
+                    "title": "Founded Year",
+                    "type": "object",
+                    "description": "Filter by founding year",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Years to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Years to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "technologies": {
+                    "title": "Technologies",
+                    "type": "object",
+                    "description": "Filter by technologies used",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Technologies to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Technologies to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "similar": {
+                    "title": "Similar Companies",
+                    "type": "object",
+                    "description": "Filter by similar companies",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Similar companies to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Similar companies to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "revenue": {
+                    "title": "Revenue Range",
+                    "type": "object",
+                    "description": "Filter by revenue range",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "Revenue ranges to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "Revenue ranges to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "sic": {
+                    "title": "SIC Code",
+                    "type": "object",
+                    "description": "Filter by SIC (Standard Industrial Classification) code",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "SIC codes to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "SIC codes to exclude",
+                            "editor": "json"
+                        }
+                    }
+                },
+                "naics": {
+                    "title": "NAICS Code",
+                    "type": "object",
+                    "description": "Filter by NAICS (North American Industry Classification System) code",
+                    "editor": "json",
+                    "properties": {
+                        "include": {
+                            "title": "Include",
+                            "type": "array",
+                            "description": "NAICS codes to include",
+                            "editor": "json"
+                        },
+                        "exclude": {
+                            "title": "Exclude",
+                            "type": "array",
+                            "description": "NAICS codes to exclude",
+                            "editor": "json"
+                        }
+                    }
+                }
+            }
+        },
+        "source": {
+            "title": "Source Fields",
+            "type": "array",
+            "description": "Specify which fields to include in the response. Leave empty for all fields.",
+            "editor": "json",
+            "items": {
+                "type": "string"
+            },
+            "example": ["name", "website_url", "industry", "city", "country"]
+        },
+        "page": {
+            "title": "Starting Page",
+            "type": "integer",
+            "description": "Page number to start from (default: 1)",
+            "editor": "number",
+            "default": 1,
+            "minimum": 1,
+            "prefill": 1
+        },
+        "maxResults": {
+            "title": "Maximum Results",
+            "type": "integer",
+            "description": "Maximum number of companies to return (default: 100)",
+            "editor": "number",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 100000,
+            "prefill": 50
+        }
+    },
+    "required": ["tombaApiKey", "tombaApiSecret"]
+}

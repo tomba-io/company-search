@@ -1,0 +1,14 @@
+{
+    "actorOutputSchemaVersion": 1,
+    "title": "Tomba Company Search Output",
+    "description": "Output from Tomba Company Search Actor - comprehensive company profiles with firmographics and contact information",
+    "type": "object",
+    "properties": {
+        "results": {
+            "type": "string",
+            "title": "Company Information Results",
+            "description": "Detailed company profiles with firmographics, contact details, and social media information",
+            "template": "{{links.apiDefaultDatasetUrl}}/items"
+        }
+    }
+}

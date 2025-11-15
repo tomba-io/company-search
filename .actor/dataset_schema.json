@@ -1,0 +1,89 @@
+{
+    "actorSpecification": 1,
+    "fields": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": ["string", "null"],
+                "description": "The name of the company"
+            },
+            "description": {
+                "type": ["string", "null"],
+                "description": "Company description"
+            },
+            "country": {
+                "type": ["string", "null"],
+                "description": "Country where the company is located"
+            },
+            "state": {
+                "type": ["string", "null"],
+                "description": "State or region where the company is located"
+            },
+            "city": {
+                "type": ["string", "null"],
+                "description": "City where the company is located"
+            },
+            "street_address": {
+                "type": ["string", "null"],
+                "description": "Street address of the company"
+            },
+            "postal_code": {
+                "type": ["string", "null"],
+                "description": "Postal code of the company location"
+            },
+            "industry": {
+                "type": ["string", "null"],
+                "description": "Industry sector of the company"
+            },
+            "company_size": {
+                "type": ["string", "null"],
+                "description": "Employee count range"
+            },
+            "type": {
+                "type": ["string", "null"],
+                "description": "Type of company"
+            },
+            "founded": {
+                "type": ["string", "null"],
+                "description": "Year the company was founded"
+            },
+            "website_url": {
+                "type": ["string", "null"],
+                "description": "Company website URL"
+            },
+            "total_emails": {
+                "type": ["number", "null"],
+                "description": "Total number of email addresses found for this company"
+            },
+            "revenue": {
+                "type": ["string", "null"],
+                "description": "Company revenue range"
+            },
+            "phone_number": {
+                "type": ["string", "null"],
+                "description": "Company phone number"
+            },
+            "linkedin_url": {
+                "type": ["string", "null"],
+                "description": "Company LinkedIn profile URL"
+            },
+            "facebook_url": {
+                "type": ["string", "null"],
+                "description": "Company Facebook page URL"
+            },
+            "twitter_url": {
+                "type": ["string", "null"],
+                "description": "Company Twitter profile URL"
+            },
+            "total_similar": {
+                "type": ["number", "null"],
+                "description": "Number of similar companies found"
+            },
+            "source": {
+                "type": "string",
+                "description": "Data source identifier"
+            }
+        }
+    }
+}
