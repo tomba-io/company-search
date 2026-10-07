@@ -83,6 +83,26 @@
             "source": {
                 "type": "string",
                 "description": "Data source identifier"
+            },
+            "charged": {
+                "type": "boolean",
+                "description": "Whether this request was charged (pay-per-event)"
+            },
+            "cached": {
+                "type": "boolean",
+                "description": "Whether the result came from the cache (free)"
+            },
+            "query": {
+                "type": ["string", "null"],
+                "description": "Search query (only on error items)"
+            },
+            "page": {
+                "type": "integer",
+                "description": "Page that failed (only on error items)"
+            },
+            "error": {
+                "type": ["string", "null"],
+                "description": "Error message if the search failed or returned no companies"
             }
         }
     }

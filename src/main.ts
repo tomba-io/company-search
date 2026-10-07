@@ -1,11 +1,11 @@
-// Apify SDK - toolkit for building Apify Actors (Read more at https://docs.apify.com/sdk/js/)
-import { Actor } from 'apify';
-import type { Company, CompanyFilters } from 'tomba';
-import { Reveal, TombaClient } from 'tomba';
+import { Actor, log } from 'apify';
+import type { CompanyFilters } from 'tomba';
+import { Reveal } from 'tomba';
 
-interface ActorInput {
-    tombaApiKey: string;
-    tombaApiSecret: string;
+import type { RunOptions } from './tomba.js';
+import { callTomba, isBillable, logSummary, setupTomba, useRunState } from './tomba.js';
+
+interface ActorInput extends RunOptions {
     query?: string;
     filters?: CompanyFilters;
     source?: string[];
@@ -13,140 +13,97 @@ interface ActorInput {
     maxResults?: number;
 }
 
-// Rate limiting configuration
-const MAX_REQUESTS_PER_MINUTE = 50;
-const MAX_REQUESTS_PER_SECOND = 5;
-const MINUTE_IN_MS = 60000;
-const SECOND_IN_MS = 1000;
-
-let requestCount = 0;
-let lastResetTime = Date.now();
-
-async function rateLimitedRequest<T>(requestFn: () => Promise<T>): Promise<T> {
-    const now = Date.now();
-    const timeSinceReset = now - lastResetTime;
-
-    // Reset counter every minute
-    if (timeSinceReset >= MINUTE_IN_MS) {
-        requestCount = 0;
-        lastResetTime = now;
-    }
-
-    // Wait if we've hit the per-minute limit
-    if (requestCount >= MAX_REQUESTS_PER_MINUTE) {
-        const waitTime = MINUTE_IN_MS - timeSinceReset;
-        console.log(`Rate limit reached. Waiting ${waitTime}ms...`);
-        await new Promise((resolve) => {
-            setTimeout(resolve, waitTime);
-        });
-        requestCount = 0;
-        lastResetTime = Date.now();
-    }
-
-    // Add delay between requests to respect per-second limit
-    if (requestCount > 0 && requestCount % MAX_REQUESTS_PER_SECOND === 0) {
-        await new Promise((resolve) => {
-            setTimeout(resolve, SECOND_IN_MS);
-        });
-    }
-
-    requestCount++;
-    return await requestFn();
+interface SearchBody {
+    data?: { companies?: Record<string, unknown>[] };
+    meta?: { total?: number; page?: number; limit?: number; pages?: number };
 }
 
-// The init() call configures the Actor for its environment. It's recommended to start every Actor with an init()
+const SOURCE = 'tomba_company_search';
+
 await Actor.init();
 
-try {
-    // Get input from the Actor
-    const input = (await Actor.getInput()) as ActorInput;
+const input = (await Actor.getInput<ActorInput>()) ?? {};
+const query = input.query?.trim() || undefined;
+const filters = input.filters && Object.keys(input.filters).length > 0 ? input.filters : undefined;
+if (!query && !filters) {
+    await Actor.fail('Input must contain a search "query", "filters", or both.');
+}
+const {
+    source: fields,
+    page: startPage = 1,
+    maxResults = 100,
+    maxConcurrency,
+    maxRetries,
+    useCache,
+    cacheTtlHours,
+} = input;
+const client = await setupTomba({ maxConcurrency, maxRetries, useCache, cacheTtlHours });
+const reveal = new Reveal(client);
 
-    if (!input) {
-        throw new Error('No input provided');
-    }
-
-    if (!input.tombaApiKey || !input.tombaApiSecret) {
-        throw new Error('Tomba API key and secret are required');
-    }
-
-    console.log('Starting Tomba Company Search Actor...');
-    console.log(`Query: ${input.query || 'No query specified'}`);
-    console.log(`Filters: ${JSON.stringify(input.filters || {})}`);
-
-    // Init Tomba
-    const client = new TombaClient();
-    const reveal = new Reveal(client);
-    client.setKey(input.tombaApiKey).setSecret(input.tombaApiSecret);
-
-    const results: Company[] = [];
-    const maxResults = input.maxResults || 100;
-    let currentPage = input.page || 1;
-    let hasMorePages = true;
-
-    while (hasMorePages && results.length < maxResults) {
-        const pageToFetch = currentPage;
-
-        try {
-            console.log(`Fetching page ${pageToFetch}...`);
-
-            const response = await rateLimitedRequest(async () => {
-                return await reveal.companiesSearch({
-                    query: input.query,
-                    filters: input.filters,
-                    _source: input.source,
-                    page: pageToFetch,
-                });
-            });
-
-            if (response && response.data && response.data.companies) {
-                const { companies } = response.data;
-                console.log(`Found ${companies.length} companies on page ${pageToFetch}`);
-
-                // Add companies to results
-                for (const company of companies) {
-                    if (results.length >= maxResults) break;
-
-                    results.push({
-                        ...company,
-                        source: 'tomba_company_search',
-                    } as Company);
-                }
-
-                // Check if there are more pages
-                if (response.meta) {
-                    const totalPages = response.meta.pages || 1;
-                    const total = response.meta.total || 0;
-
-                    console.log(`Page ${pageToFetch} of ${totalPages} (Total companies: ${total})`);
-
-                    hasMorePages = currentPage < totalPages && results.length < maxResults;
-                    currentPage++;
-                } else {
-                    hasMorePages = false;
-                }
-            } else {
-                console.log('No companies found in response');
-                hasMorePages = false;
-            }
-        } catch (error) {
-            console.error(`Error fetching page ${pageToFetch}:`, error);
-            hasMorePages = false;
-        }
-    }
-
-    // Save results to dataset
-    if (results.length > 0) {
-        await Actor.pushData(results);
-    }
-
-    // Log summary
-    console.log('=== SUMMARY ===');
-    console.log(`Total companies found: ${results.length}`);
-    console.log(`Pages processed: ${currentPage - 1}`);
-} catch (error) {
-    console.error('Actor failed:', error);
-    throw error;
+// Resume: pages already processed are skipped, and the number of companies already pushed is kept.
+const state = await useRunState();
+const progress = await Actor.useState<{ pushed: number }>('COMPANY_SEARCH_PROGRESS', { pushed: 0 });
+if (Object.keys(state.done).length > 0) {
+    log.info(
+        `Resuming: ${Object.keys(state.done).length} pages already processed, ${progress.pushed} companies saved.`,
+    );
 }
 
-// Gracefully exit the Actor process. It's recommended to quit all Actors with an exit()
+const startedAt = Date.now();
+let pagesRequested = 0;
+log.info('Searching companies', { query, filters, maxResults });
+
+// One query: pages are fetched sequentially, each page is one billable request.
+for (let page = Math.max(1, startPage); progress.pushed < maxResults; page++) {
+    if (state.done[`page:${page}`]) continue;
+
+    const params = { query, filters, _source: fields?.length ? fields : undefined, page };
+    const res = await callTomba('companies-search', params, async () => reveal.companiesSearch(params));
+    if (res.skipped) break;
+    pagesRequested++;
+
+    const body = res.body as SearchBody | undefined;
+    const companies = Array.isArray(body?.data?.companies) ? body.data.companies : [];
+
+    if (!isBillable(res.body) || companies.length === 0) {
+        if (progress.pushed === 0) {
+            await Actor.pushData({
+                query: query ?? null,
+                page,
+                source: SOURCE,
+                charged: res.charged,
+                cached: res.cached,
+                error: res.error ?? 'No companies found',
+            });
+        }
+        log.info(`Page ${page}: ${res.error ?? 'no companies found'}`);
+        state.done[`page:${page}`] = true;
+        break;
+    }
+
+    const items = companies.slice(0, Math.max(0, maxResults - progress.pushed)).map((company) => ({
+        ...company,
+        source: SOURCE,
+        charged: res.charged,
+        cached: res.cached,
+    }));
+    await Actor.pushData(items);
+    progress.pushed += items.length;
+    state.done[`page:${page}`] = true;
+
+    const totalPages = body?.meta?.pages;
+    log.info(
+        `Page ${page}${typeof totalPages === 'number' ? ` of ${totalPages}` : ''}: ${items.length} companies${res.cached ? ' (cached)' : ''}`,
+        { total: body?.meta?.total },
+    );
+
+    const pageSize = body?.meta?.limit;
+    if (typeof totalPages === 'number' && page >= totalPages) break;
+    // A short page is the last one: don't pay for an extra empty page.
+    if (typeof pageSize === 'number' && companies.length < pageSize) break;
+}
+
+log.info(`Total companies saved: ${progress.pushed}`, { pagesRequested });
+logSummary('Company Search', 1, startedAt);
+
 await Actor.exit();

@@ -1,70 +1,109 @@
-# Tomba Company Search Actor
+# Tomba Company Search
 
-Find relevant companies aligned with your ideal customer profile using Tomba's powerful company search API. This Actor lets you search and filter companies by location, industry, size, revenue, technologies used, and many other criteria.
+[![Price](https://img.shields.io/badge/Price-%243.12%20per%201K%20pages-brightgreen)](#pricing)
+[![No signup](https://img.shields.io/badge/Tomba%20account-not%20needed-blue)](#quick-start)
+[![No rate limit](https://img.shields.io/badge/Rate%20limit-none-brightgreen)](#built-for-big-lists)
 
-## Features
+**Build a list of companies that match your ideal customer profile in minutes.** Describe who you're looking for in plain words, or filter by location, industry, size, revenue, technologies and more, and get a clean list of companies with website, address, phone, social profiles and firmographics, ready to export.
 
-- **Natural Language Search**: Use simple queries like "technology companies in san francisco"
-- **Advanced Filtering**: Filter by location, industry, company size, revenue, and more
-- **Rich Company Data**: Get comprehensive information including contact details, social profiles, and firmographics
-- **Pagination Support**: Automatically fetch multiple pages of results
-- **Rate Limiting**: Built-in rate limiting to respect API limits (50 req/min)
-- **Scalable**: Process up to 100000 companies per run
+No Tomba account. No API key. No subscription. **You pay $0.00312 per page of results, and only when Tomba answers.**
 
-## Input Parameters
+## Why teams choose this Actor
 
-### Required Fields
+- **Start in 30 seconds**: Open the Actor, type a search like "technology companies in san francisco", click Start. Nothing to sign up for
+- **Search the way you think**: Plain-language queries, precise include/exclude filters, or both
+- **$3.12 per 1,000 pages**: Every page returns a batch of companies. No monthly plan, no credits that expire, no minimum spend
+- **Pay only for answers**: Errors, invalid searches and temporary failures are free
+- **Rich company profiles**: Industry, size, revenue, founding year, full address, phone, LinkedIn, Facebook and Twitter, plus how many emails Tomba knows for each company
+- **Never pay twice**: Pages you fetched in the last 24 hours come back from cache for free
+- **Export anywhere**: Download as CSV, Excel or JSON, or send results straight to your CRM with Apify integrations
 
-- **Tomba API Key** (`tombaApiKey`): Your Tomba API key from https://app.tomba.io/api
-- **Tomba API Secret** (`tombaApiSecret`): Your Tomba API secret from https://app.tomba.io/api
+## What you can do with it
 
-### Optional Fields
+| Goal                       | How Company Search helps                                                        |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| **Build prospect lists**   | Turn your ideal customer profile into a list of real companies                  |
+| **Plan sales territories** | List every relevant company in a country, state or city                         |
+| **Target by tech stack**   | Find companies that use (or don't use) React, AWS, Shopify, Salesforce and more |
+| **Research markets**       | Size an industry by location, company size or revenue                           |
+| **Find look-alikes**       | Find companies similar to your best customers with the `similar` filter         |
+| **Source talent or deals** | Spot growing companies in the sectors you hire from or invest in                |
 
-- **Search Query** (`query`): Natural language query to search for companies
-    - Example: `"technology companies in san francisco"`
+## Quick start
 
-- **Company Filters** (`filters`): Advanced filters to refine your search
-    - `location_city`: Filter by city (include/exclude)
-    - `location_country`: Filter by country using 2-letter ISO country codes (e.g., "US", "GB", "FR") (include/exclude)
-    - `location_state`: Filter by state/region (include/exclude)
-    - `industry`: Filter by industry sector (include/exclude)
-    - `size`: Filter by employee count range (include/exclude)
-        - Options: `"1-10"`, `"11-50"`, `"51-200"`, `"201-500"`, `"501-1000"`, `"1000+"`
-    - `type`: Filter by company type (include/exclude)
-    - `keywords`: Filter by keywords (include/exclude)
-    - `founded`: Filter by founding year (include/exclude)
-    - `technologies`: Filter by technologies used (include/exclude)
-    - `similar`: Filter by similar companies (include/exclude)
-    - `revenue`: Filter by revenue range (include/exclude)
-    - `sic`: Filter by SIC code (include/exclude)
-    - `naics`: Filter by NAICS code (include/exclude)
+1. Click **Try for free**
+2. Type a **Search query** (for example `technology companies in san francisco`) and/or set **Company filters**
+3. Click **Start**, then download your results as CSV, Excel or JSON
 
-- **Source Fields** (`source`): Specify which fields to include in the response
-    - Example: `["name", "website_url", "industry", "city", "country"]`
-    - Leave empty for all fields
+That's it. No Tomba account or API key is needed.
 
-- **Starting Page** (`page`): Page number to start from (default: 1)
+## Input
 
-- **Maximum Results** (`maxResults`): Maximum number of companies to return (default: 100, max: 100000)
+Provide a `query`, `filters`, or both.
+
+| Field           | Required | Default | Description                                                                    |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------ |
+| `query`         | No\*     |         | What you're looking for, in plain words, e.g. `software companies in new york` |
+| `filters`       | No\*     |         | Include/exclude filters (see below)                                            |
+| `source`        | No       | all     | Only return these fields, e.g. `["name", "website_url", "industry"]`           |
+| `maxResults`    | No       | `100`   | Maximum number of companies to return (up to 100,000)                          |
+| `page`          | No       | `1`     | First page to fetch. Use it to continue a list you already started             |
+| `maxRetries`    | No       | `3`     | How many times to retry a temporary failure (0–10)                             |
+| `useCache`      | No       | `true`  | Reuse results from your previous runs for free                                 |
+| `cacheTtlHours` | No       | `24`    | How long cached results stay valid (`0` turns the cache off)                   |
+
+\* At least one of `query` or `filters` is required.
+
+Every filter takes an `include` list, an `exclude` list, or both:
+
+| Filter             | Example                                                  |
+| ------------------ | -------------------------------------------------------- |
+| `location_country` | `{ "include": ["US", "CA"] }` (two-letter country codes) |
+| `location_state`   | `{ "include": ["california"] }`                          |
+| `location_city`    | `{ "include": ["san francisco", "austin"] }`             |
+| `industry`         | `{ "include": ["software"], "exclude": ["staffing"] }`   |
+| `size`             | `{ "include": ["51-200", "201-500"] }`                   |
+| `revenue`          | `{ "include": ["$10M-$50M"] }`                           |
+| `type`             | `{ "include": ["privately held"] }`                      |
+| `founded`          | `{ "include": ["2021", "2022", "2023"] }`                |
+| `technologies`     | `{ "include": ["react", "aws"] }`                        |
+| `keywords`         | `{ "include": ["fintech"] }`                             |
+| `similar`          | `{ "include": ["stripe.com"] }`                          |
+| `company`          | `{ "exclude": ["google"] }`                              |
+| `sic`, `naics`     | `{ "include": ["7372"] }` (industry codes)               |
+
+Company sizes: `1-10`, `11-50`, `51-200`, `201-500`, `501-1000`, `1000+`.
+
+```json
+{
+    "query": "software companies",
+    "filters": {
+        "location_country": { "include": ["US"] },
+        "size": { "include": ["51-200", "201-500"] },
+        "technologies": { "include": ["react", "aws"] }
+    },
+    "maxResults": 500
+}
+```
 
 ## Output
 
-The Actor returns an array of company objects with the following structure:
+You get one row per company:
 
 ```json
 {
     "name": "Example Technology Inc.",
     "description": "Leading provider of innovative software solutions",
-    "country": "United States",
+    "country": "US",
     "state": "California",
     "city": "San Francisco",
     "street_address": "123 Market Street",
     "postal_code": "94103",
-    "industry": "Software & Technology",
+    "industry": "Software",
     "company_size": "51-200",
-    "type": "Private",
+    "type": "privately held",
     "founded": "2015",
-    "website_url": "https://example.com",
+    "website_url": "example.com",
     "total_emails": 150,
     "revenue": "$10M-$50M",
     "phone_number": "+1-415-555-0100",
@@ -72,234 +111,102 @@ The Actor returns an array of company objects with the following structure:
     "facebook_url": "https://www.facebook.com/example",
     "twitter_url": "https://twitter.com/example",
     "total_similar": 25,
-    "source": "tomba_company_search"
+    "source": "tomba_company_search",
+    "charged": true,
+    "cached": false
 }
 ```
 
-## Usage Examples
+| Field                                         | Description                                                  |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `name`                                        | Company name                                                 |
+| `description`                                 | What the company does                                        |
+| `website_url`                                 | Company website                                              |
+| `industry`                                    | Industry sector                                              |
+| `company_size`                                | Employee count range                                         |
+| `type`                                        | Company type, e.g. privately held, public                    |
+| `founded`                                     | Year founded                                                 |
+| `revenue`                                     | Revenue range                                                |
+| `country`, `state`, `city`                    | Location                                                     |
+| `street_address`, `postal_code`               | Address                                                      |
+| `phone_number`                                | Company phone number                                         |
+| `linkedin_url`, `facebook_url`, `twitter_url` | Social profiles (other networks are included when available) |
+| `total_emails`                                | How many email addresses Tomba knows for this company        |
+| `total_similar`                               | How many similar companies Tomba knows                       |
+| `source`                                      | Always `tomba_company_search`                                |
+| `charged`                                     | `true` if the page this company came from was billed         |
+| `cached`                                      | `true` if this result came from the cache (free)             |
 
-### Example 1: Basic Search
+If you use `source` to pick fields, only those fields are returned. When a search finds nothing, you get a single row with `query`, `page` and an `error` explaining why.
 
-```json
-{
-    "tombaApiKey": "ta_xxxx",
-    "tombaApiSecret": "ts_xxxx",
-    "query": "technology companies in san francisco",
-    "maxResults": 50
-}
-```
+## Pricing
 
-### Example 2: Advanced Filtering
+**$0.00312 per page request ($3.12 per 1,000 pages).** No subscription and no Tomba account needed.
 
-```json
-{
-    "tombaApiKey": "ta_xxxx",
-    "tombaApiSecret": "ts_xxxx",
-    "query": "software companies",
-    "filters": {
-        "location_city": {
-            "include": ["san francisco", "new york", "austin"]
-        },
-        "industry": {
-            "include": ["technology", "software"]
-        },
-        "size": {
-            "include": ["51-200", "201-500"]
-        },
-        "revenue": {
-            "include": ["$10M-$50M", "$50M-$100M"]
-        }
-    },
-    "maxResults": 100
-}
-```
+Results come in pages. Each page request returns one batch of matching companies, and the Actor keeps requesting the next page until it has saved `maxResults` companies or there are no more results. You pay once per page, not per company, and the last page stops early, so you never pay for empty pages after the end of your results.
 
-### Example 3: Technology-Based Search
+You are only charged when Tomba returns a usable answer:
 
-```json
-{
-    "tombaApiKey": "ta_xxxx",
-    "tombaApiSecret": "ts_xxxx",
-    "filters": {
-        "technologies": {
-            "include": ["react", "aws", "kubernetes"]
-        },
-        "location_country": {
-            "include": ["US"]
-        },
-        "size": {
-            "include": ["201-500", "501-1000"]
-        }
-    },
-    "maxResults": 100
-}
-```
+| What happens                                    | Charged       |
+| ----------------------------------------------- | ------------- |
+| A page of companies is returned                 | Yes, per page |
+| Your search matches no companies                | Yes, one page |
+| Invalid search or any other error               | No            |
+| Temporary failure (it is retried automatically) | No            |
+| Result served from the cache                    | No            |
 
-### Example 4: Exclude Specific Criteria
+Every row shows `charged` and `cached`, so you always know what you paid for. To cap your spend, set **Maximum cost per run** in the run options, or lower `maxResults`: the Actor stops cleanly when the limit is reached.
 
-```json
-{
-    "tombaApiKey": "ta_xxxx",
-    "tombaApiSecret": "ts_xxxx",
-    "query": "e-commerce companies",
-    "filters": {
-        "location_country": {
-            "include": ["US", "CA"]
-        },
-        "industry": {
-            "exclude": ["consulting", "staffing"]
-        },
-        "size": {
-            "exclude": ["1-10", "11-50"]
-        }
-    },
-    "maxResults": 75
-}
-```
+## Built for big lists
 
-## Use Cases
+- **No rate limit**: pages are requested back to back, without delays
+- **Up to 100,000 companies per run** with `maxResults`
+- **Automatic retries**: temporary failures are retried for you, and never billed
+- **Resumable**: if a run is interrupted, it continues from the next page without charging you again
+- **Cache**: repeat searches within 24 hours are free
 
-### Sales & Lead Generation
+## Integrations
 
-- Build targeted prospect lists based on ideal customer profiles
-- Find companies using specific technologies for product positioning
-- Identify companies in specific locations for territory planning
+Run it on a schedule, call it from the Apify API, or connect it to Zapier, Make, Google Sheets, HubSpot, Slack and hundreds of other apps with [Apify integrations](https://docs.apify.com/platform/integrations). Webhooks let you trigger your own workflow as soon as a run finishes.
 
-### Market Research
-
-- Analyze industry trends and company distributions
-- Study competitor landscapes in specific markets
-- Track company growth patterns by size and revenue
-
-### Recruitment
-
-- Find companies in specific industries for talent sourcing
-- Identify growing companies (by size/revenue) for hiring opportunities
-- Target companies using specific technologies for technical recruitment
-
-### Investment Research
-
-- Discover emerging companies in specific sectors
-- Analyze market concentration by geography and industry
-- Identify companies with specific growth indicators
-
-## API Information
-
-This Actor uses the [Tomba Company Search API](https://tomba.io/). To use this Actor, you need:
-
-1. A Tomba account (sign up at https://tomba.io)
-2. API credentials from https://app.tomba.io/api
-3. Sufficient API credits for company searches
-
-### Rate Limits
-
-The Actor implements rate limiting to comply with Tomba API limits:
-
-- Maximum 50 requests per minute
-
-## Resources
-
-- [Tomba API Documentation](https://docs.tomba.io/)
-- [Tomba Company Search API](https://docs.tomba.io/api/reveal#search-companies)
-- [Tomba Node SDK](https://github.com/tomba-io/node)
-- [Get Tomba API Credentials](https://app.tomba.io/api)
+Tip: feed the `website_url` of each company into **Tomba Domain Search** to get the verified emails of the people who work there.
 
 ## FAQ
 
-### General Questions
+**Do I need a Tomba account or API key?**
+No. Everything is built in. You only pay the per-page price on Apify.
 
-**Q: What is the Tomba Company Search Actor?**
-A: The Tomba Company Search Actor is an Apify automation tool that helps you find relevant companies aligned with your ideal customer profile using Tomba's advanced company search API with powerful filtering options.
+**How much does it cost?**
+$0.00312 per page of results ($3.12 per 1,000 pages). Errors, invalid searches and cached pages are free.
 
-**Q: Do I need a Tomba account to use this Actor?**
-A: Yes, you need a Tomba account and valid API credentials (API key and secret). Sign up at https://tomba.io and get your credentials from https://app.tomba.io/api.
+**Should I use a query or filters?**
+Both work. A query is the fastest way to start ("fintech companies in london"). Filters give you exact control, including exclusions. You can combine them.
 
-**Q: How much does it cost to use this Actor?**
-A: The Actor itself runs on Apify's platform, which has its own pricing. Additionally, you'll need Tomba API credits based on your usage. Check Tomba's pricing at https://tomba.io/pricing for company search costs.
+**Why was I charged when no companies matched?**
+Tomba ran your search and answered that nothing matches it. That is a real answer, so it counts as one page. Try broader filters.
 
-**Q: What are the rate limits?**
-A: The Actor implements rate limiting of 50 requests per minute to comply with Tomba's API limits.
+**How do I get fewer, more relevant results?**
+Add filters (size, location, industry, technologies) and set `maxResults`. Precise filters mean more relevant companies on every page you pay for.
 
-### Technical Questions
+**Can I find companies like my best customers?**
+Yes. Use the `similar` filter with their domains, for example `{ "similar": { "include": ["stripe.com"] } }`.
 
-**Q: How do I search for companies?**
-A: You can use either a natural language query (e.g., "technology companies in san francisco") or apply advanced filters for specific criteria like location, industry, company size, revenue, and technologies used.
+**What if my run is interrupted?**
+It continues from the next page. Companies already saved are not charged again.
 
-**Q: What filters are available?**
-A: Available filters include: company name, location (country/city/state), industry, company size, type, keywords, founded year, technologies, similar companies, revenue, SIC codes, and NAICS codes. Each filter supports both include and exclude options.
-
-**Q: How do I filter by company size?**
-A: Use the `size` filter with options: "1-10", "11-50", "51-200", "201-500", "501-1000", or "1000+". You can include multiple ranges or exclude specific ones.
-
-**Q: Can I search for companies using specific technologies?**
-A: Yes! Use the `technologies` filter to find companies using specific tech stacks (e.g., "react", "aws", "kubernetes", "salesforce").
-
-**Q: How does pagination work?**
-A: The Actor automatically handles pagination. Set `maxResults` to control how many companies to fetch, and optionally set `page` to start from a specific page number.
-
-**Q: What fields are returned for each company?**
-A: Companies include: name, description, location details (country/state/city/address), industry, company size, type, founded year, website URL, total emails, revenue, phone number, social media URLs (LinkedIn/Facebook/Twitter), and number of similar companies.
-
-**Q: Can I customize which fields are returned?**
-A: Yes, use the `source` parameter to specify which fields to include in the response. Leave it empty to get all available fields.
-
-**Q: What does the `total_emails` field represent?**
-A: This shows the number of email addresses Tomba has found for that company in its database, which can be useful for gauging the company's email presence.
-
-### Search Strategy Questions
-
-**Q: How do I find companies in multiple cities?**
-A: Use the `location_city` filter with an include array: `{"include": ["san francisco", "new york", "austin"]}`.
-
-**Q: Can I exclude certain industries?**
-A: Yes, use the exclude option in any filter: `{"industry": {"exclude": ["consulting", "staffing"]}}`.
-
-**Q: How do I find recently founded companies?**
-A: Use the `founded` filter to include specific years: `{"founded": {"include": ["2020", "2021", "2022", "2023"]}}`.
-
-**Q: Can I search for similar companies to a specific domain?**
-A: Yes, use the `similar` filter with a company domain: `{"similar": {"include": ["stripe.com"]}}`.
-
-**Q: What's the difference between SIC and NAICS codes?**
-A: SIC (Standard Industrial Classification) and NAICS (North American Industry Classification System) are industry classification systems. NAICS is more modern and detailed, while SIC is older but still widely used.
-
-### Business Use Cases
-
-**Q: How can I use this for sales prospecting?**
-A: Filter companies by your ideal customer profile (industry, size, location, technologies) to build targeted prospect lists. The results include contact information like phone numbers and social media profiles.
-
-**Q: Can I use this for competitor research?**
-A: Yes, search for companies in your industry and location, or use the `similar` filter to find companies similar to specific competitors.
-
-**Q: Is this useful for recruitment?**
-A: Absolutely! Filter by industry and technologies to find companies where your ideal candidates might work, then use the company information for targeted outreach.
-
-**Q: How can investors use this Actor?**
-A: Investors can discover emerging companies in specific sectors, analyze market concentration, identify companies with growth indicators (size, revenue, founding date), and research industry trends.
-
-**Q: Can I track companies in my territory?**
-A: Yes, use location filters (country, state, city) to find all relevant companies in your sales territory and keep your CRM updated.
-
-**Q: How do I find companies by revenue range?**
-A: Use the `revenue` filter with ranges like "$10M-$50M", "$50M-$100M", etc. You can include multiple ranges or exclude specific ones.
-
-## Keywords
-
-company search, business intelligence, lead generation, market research, sales prospecting, recruitment, investment research, Tomba API, Apify Actor, data enrichment, company filtering, technology stack, firmographics, business data
+**How do I limit what I spend?**
+Set **Maximum cost per run** before you start, or lower `maxResults`. The Actor stops as soon as the limit is reached.
 
 ## Support
 
-If you need any help, have questions, or encounter any issues while using Tomba.io, please don't hesitate to reach out to our support team. You can contact us via:
+Questions or feedback? We're happy to help:
 
 - **Email**: support@tomba.io
-- **Live chat**: Available on the Tomba.io website during business hours
-
-## Contributing
-
-We welcome contributions to improve this actor. Please feel free to submit issues, feature requests, or pull requests to help make this tool even better for the community.
+- **Live chat**: on [tomba.io](https://tomba.io) during business hours
+- **Issues**: use the **Issues** tab on this Actor's page
 
 ## About Tomba
 
-Founded in 2020, Tomba prides itself on being the most reliable, accurate, and in-depth source of email address data available anywhere. We process terabytes of data to produce our Email finder API.
+Founded in 2020, [Tomba](https://tomba.io) is a B2B data platform for finding, verifying and enriching business contacts. Our Email Finder, Domain Search and Email Verifier help sales and marketing teams reach the right people.
 
 ![Tomba Logo](https://tomba.io/logo.png)

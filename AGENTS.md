@@ -2,6 +2,90 @@
 
 Important: Before you begin, fill in the `generatedBy` property in the meta section of `.actor/actor.json`. Replace it with the model you're currently using. This helps Apify monitor and improve AGENTS.md for specific LLM models.
 
+## This Actor: Tomba Company Search
+
+Maintainer notes for this Actor. The README is the end-user page shown on Apify Store and must not contain developer content (SDK snippets, secrets, monetization setup). The rest of this file is the generic Apify Actors guide.
+
+### Scripts
+
+```bash
+npm install
+npm run build     # compile TypeScript to dist/
+npm run lint      # ESLint (src and test)
+npm run format    # Prettier
+npm test          # unit + end-to-end tests (node:test)
+npm start         # run locally with tsx
+```
+
+### Credentials
+
+The Actor uses our Tomba account. Credentials come from environment variables, never from the input (there is no API key field):
+
+| Variable             | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| `TOMBA_API_KEY`      | Tomba API key (`ta_…`)                             |
+| `TOMBA_API_SECRET`   | Tomba secret (`ts_…`)                              |
+| `TOMBA_API_ENDPOINT` | Optional API base URL; only used by the test suite |
+
+`.actor/actor.json` maps the variables to Apify secrets:
+
+```bash
+apify secrets add tombaApiKey ta_xxxxxxxxxxxxxxxxxxxx
+apify secrets add tombaApiSecret ts_xxxxxxxxxxxxxxxxxxxx
+apify push
+```
+
+Run locally:
+
+```bash
+TOMBA_API_KEY=ta_… TOMBA_API_SECRET=ts_… npm start
+```
+
+If the variables are missing the run fails with "Actor is misconfigured" before any request is made.
+
+### Pricing (pay per event)
+
+In **Apify Console → Publication → Monetization**, choose **Pay per event** and add:
+
+| Event           | Price    | Charged when                                               |
+| --------------- | -------- | ---------------------------------------------------------- |
+| `tomba-request` | $0.00312 | Tomba returns a billable response for one page (see below) |
+
+Company Search is paged: each page (`meta.limit` companies) is a separate `POST /reveal/search` request and a separate event.
+
+`isBillable()` in `src/tomba.ts` mirrors Tomba's billing:
+
+| Tomba outcome                                                    | Charged |
+| ---------------------------------------------------------------- | ------- |
+| JSON with non-empty `data`, including a page with zero companies | Yes     |
+| Error status (4xx, 5xx, including 422 and 429)                   | No      |
+| Success with empty or null `data`                                | No      |
+| Success with an `errors` object                                  | No      |
+| Non-JSON body (reported as 502)                                  | No      |
+| Cache hit                                                        | No      |
+
+There is no client-side rate limit or delay between pages; 429 and 5xx responses are retried with exponential backoff.
+
+### Architecture
+
+- `src/tomba.ts`: shared helper, identical in every Tomba Actor. It handles credentials, caching (`tomba-cache` key-value store), retries with exponential backoff, pay-per-event charging, budget reservation, the concurrency pool and resume state. Do not edit it in one Actor only.
+- `src/main.ts`: input handling, paging and output mapping.
+    - The run fails early when there is neither a `query` nor `filters`.
+    - The request body is `{ query, filters, _source, page }` (`source` input → `_source`; empty values are left out).
+    - Pages are fetched sequentially starting at `page`; `maxConcurrency` has no effect here.
+    - Paging stops at `maxResults`, at `meta.pages`, at a short page (`< meta.limit`), at a non-billable or empty page, or when the charge limit is reached.
+    - One dataset item per company: the Tomba company fields plus `source`, `charged`, `cached`. When the search returns nothing, one item `{ query, page, source, charged, cached, error }` is saved.
+    - Resume: finished pages (`TOMBA_STATE`) and the number of companies saved (`COMPANY_SEARCH_PROGRESS`) are persisted, so a resumed run continues at the next page and still honours `maxResults`.
+- The `tomba` SDK v1.1.1 resolves every call to `{ data, rateLimit }`, where `data` is the response body. Its `.d.ts` types still declare the old return type, so always go through `callTomba()`.
+
+### Tests
+
+- `test/tomba.test.ts`: unit tests for the shared helper (identical in every Actor)
+- `test/main.test.ts`: end-to-end tests that run `src/main.ts` against a local mock Tomba API (paging, billing, cache, retries, charge limit and resume, credentials)
+- `test/helpers.ts`: mock server and Actor runner (identical in every Actor)
+
+Locally, the Apify SDK prices every event at $1 when `ACTOR_TEST_PAY_PER_EVENT=true`, so the tests use `maxTotalChargeUsd` as an event count.
+
 ## What are Apify Actors?
 
 - Actors are serverless programs that run in the cloud. They're inspired by the UNIX philosophy - programs that do one thing well and can be easily combined to build complex systems.
@@ -29,7 +113,7 @@ Important: Before you begin, fill in the `generatedBy` property in the meta sect
 - set up output schema in `.actor/output_schema.json`
 - clean and validate data before pushing to dataset
 - use semantic CSS selectors and fallback strategies for missing elements
-- respect robots.txt, ToS, and implement rate limiting with delays
+- respect robots.txt, ToS, and implement rate limiting with delays when scraping (this Actor calls the Tomba API and needs no client-side rate limit)
 - check which tools (cheerio/playwright/crawlee) are installed before applying guidance
 
 ## Don't
@@ -83,7 +167,9 @@ Ask first:
 ├── input_schema.json # Input validation & Console form definition
 └── output_schema.json # Specifies where an Actor stores its output
 src/
-└── main.js # Actor entry point and orchestrator
+├── main.ts # Actor entry point: input, paging, output
+└── tomba.ts # Shared Tomba helper (identical in every Tomba Actor)
+test/ # node:test unit and end-to-end tests
 storage/ # Local storage (mirrors Cloud during development)
 ├── datasets/ # Output items (JSON objects)
 ├── key_value_stores/ # Files, config, INPUT
