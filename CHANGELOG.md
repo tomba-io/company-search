@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `tomba` upgraded to 1.1.1 (responses are now `{ data, rateLimit }`)
 - `apify` upgraded to 3.7.2
 
+### Bug Fixes
+
+- Runs on Apify no longer fail with "Schema validation failed": `phone_number` is a boolean in Tomba's response, and the dataset schema now accepts it (and `null` for every Tomba field)
+
 ## [0.0.1] - 2025-11-15
 
 ### Added
