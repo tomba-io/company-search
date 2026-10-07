@@ -1,0 +1,620 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Tomba Company Search API",
+        "version": "1.0.0",
+        "description": "Real-time API (Apify Standby mode). Find companies matching a natural language query and/or advanced filters. Each page of results costs $0.00312 (a search matching no companies counts as one page); invalid searches, errors and cached results are free."
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "summary": "Search companies",
+                "description": "Without query parameters, returns a short usage note (also used as the readiness probe).",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Natural language search, e.g. `technology companies in san francisco`. Provide `query`, `filters`, or both.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "technology companies in san francisco"
+                    },
+                    {
+                        "name": "filters",
+                        "in": "query",
+                        "description": "Advanced filters as a JSON object (URL-encoded), in the same format as the `filters` input: each filter has `include` and/or `exclude` lists. Available filters: `company`, `location_country`, `location_city`, `location_state`, `industry`, `size`, `type`, `keywords`, `founded`, `technologies`, `similar`, `revenue`, `sic`, `naics`.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "{\"industry\":{\"include\":[\"software\"]},\"location_country\":{\"include\":[\"US\"]}}"
+                    },
+                    {
+                        "name": "source",
+                        "in": "query",
+                        "description": "Fields to return for each company. Repeat the parameter or separate values with commas. Leave empty for all fields.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "name,website_url,industry"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page to start from (default 1).",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "maxResults",
+                        "in": "query",
+                        "description": "Maximum number of companies to return (default 100). Each page of results is billed once.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100000,
+                            "default": 100
+                        },
+                        "example": 20
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Results"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/Error"
+                    },
+                    "402": {
+                        "$ref": "#/components/responses/Error"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Search companies using a JSON input",
+                "description": "Accepts the same JSON input as a normal Actor run. Provide `query`, `filters`, or both.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "query": {
+                                        "type": "string",
+                                        "description": "Natural language query to search for companies (e.g., 'technology companies in san francisco')",
+                                        "example": "technology companies in san francisco"
+                                    },
+                                    "filters": {
+                                        "type": "object",
+                                        "description": "Advanced filters to refine your company search",
+                                        "properties": {
+                                            "company": {
+                                                "type": "object",
+                                                "description": "Filter by company name",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Company names to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Company names to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "location_country": {
+                                                "type": "object",
+                                                "description": "Filter by country using 2-letter ISO country codes (e.g., US, GB, FR, CA, DE)",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Countries to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Countries to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "location_city": {
+                                                "type": "object",
+                                                "description": "Filter by city",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Cities to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Cities to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "location_state": {
+                                                "type": "object",
+                                                "description": "Filter by state/region",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "States to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "States to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "industry": {
+                                                "type": "object",
+                                                "description": "Filter by industry",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Industries to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Industries to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "size": {
+                                                "type": "object",
+                                                "description": "Filter by company size (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1000+')",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Sizes to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Sizes to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "type": {
+                                                "type": "object",
+                                                "description": "Filter by company type",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Types to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Types to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "keywords": {
+                                                "type": "object",
+                                                "description": "Filter by keywords",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Keywords to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Keywords to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "founded": {
+                                                "type": "object",
+                                                "description": "Filter by founding year",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Years to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Years to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "technologies": {
+                                                "type": "object",
+                                                "description": "Filter by technologies used",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Technologies to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Technologies to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "similar": {
+                                                "type": "object",
+                                                "description": "Filter by similar companies",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Similar companies to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Similar companies to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "revenue": {
+                                                "type": "object",
+                                                "description": "Filter by revenue range",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "Revenue ranges to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "Revenue ranges to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "sic": {
+                                                "type": "object",
+                                                "description": "Filter by SIC (Standard Industrial Classification) code",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "SIC codes to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "SIC codes to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "naics": {
+                                                "type": "object",
+                                                "description": "Filter by NAICS (North American Industry Classification System) code",
+                                                "properties": {
+                                                    "include": {
+                                                        "type": "array",
+                                                        "description": "NAICS codes to include",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "exclude": {
+                                                        "type": "array",
+                                                        "description": "NAICS codes to exclude",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "example": {
+                                            "industry": {
+                                                "include": ["software"]
+                                            },
+                                            "size": {
+                                                "include": ["51-200"]
+                                            }
+                                        }
+                                    },
+                                    "source": {
+                                        "type": "array",
+                                        "description": "Specify which fields to include in the response. Leave empty for all fields.",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "description": "Page number to start from (default: 1)",
+                                        "minimum": 1,
+                                        "default": 1
+                                    },
+                                    "maxResults": {
+                                        "type": "integer",
+                                        "description": "Maximum number of companies to return (default: 100)",
+                                        "minimum": 1,
+                                        "maximum": 100000,
+                                        "default": 100
+                                    },
+                                    "maxConcurrency": {
+                                        "type": "integer",
+                                        "description": "How many Tomba requests run in parallel. There is no rate limit, so raise it for large lists.",
+                                        "minimum": 1,
+                                        "maximum": 50,
+                                        "default": 10
+                                    },
+                                    "maxRetries": {
+                                        "type": "integer",
+                                        "description": "How many times to retry a request after a network error, 429 or 5xx response (exponential backoff). Failed requests are never charged.",
+                                        "minimum": 0,
+                                        "maximum": 10,
+                                        "default": 3
+                                    },
+                                    "useCache": {
+                                        "type": "boolean",
+                                        "description": "Reuse results from previous runs for identical requests. Cached results are free.",
+                                        "default": true
+                                    },
+                                    "cacheTtlHours": {
+                                        "type": "integer",
+                                        "description": "How long cached results stay valid. 0 disables the cross-run cache.",
+                                        "minimum": 0,
+                                        "maximum": 720,
+                                        "default": 24
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Results"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/Error"
+                    },
+                    "402": {
+                        "$ref": "#/components/responses/Error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "responses": {
+            "Results": {
+                "description": "One row per company, in the same format as the dataset items.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Company"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Error": {
+                "description": "Invalid input (400) or the run's max charge limit was reached (402).",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "Company": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The name of the company"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company description"
+                    },
+                    "country": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Country where the company is located"
+                    },
+                    "state": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "State or region where the company is located"
+                    },
+                    "city": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "City where the company is located"
+                    },
+                    "street_address": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Street address of the company"
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Postal code of the company location"
+                    },
+                    "industry": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Industry sector of the company"
+                    },
+                    "company_size": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Employee count range"
+                    },
+                    "type": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Type of company"
+                    },
+                    "founded": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Year the company was founded"
+                    },
+                    "website_url": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company website URL"
+                    },
+                    "total_emails": {
+                        "type": "number",
+                        "nullable": true,
+                        "description": "Total number of email addresses found for this company"
+                    },
+                    "revenue": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company revenue range"
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company phone number"
+                    },
+                    "linkedin_url": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company LinkedIn profile URL"
+                    },
+                    "facebook_url": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company Facebook page URL"
+                    },
+                    "twitter_url": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Company Twitter profile URL"
+                    },
+                    "total_similar": {
+                        "type": "number",
+                        "nullable": true,
+                        "description": "Number of similar companies found"
+                    },
+                    "source": {
+                        "type": "string",
+                        "description": "Data source identifier"
+                    },
+                    "charged": {
+                        "type": "boolean",
+                        "description": "Whether this request was charged (pay-per-event)"
+                    },
+                    "cached": {
+                        "type": "boolean",
+                        "description": "Whether the result came from the cache (free)"
+                    },
+                    "query": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Search query (only on error items)"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "description": "Page that failed (only on error items)"
+                    },
+                    "error": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Error message if the search failed or returned no companies"
+                    }
+                }
+            }
+        }
+    }
+}

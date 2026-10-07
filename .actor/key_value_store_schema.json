@@ -1,0 +1,51 @@
+{
+    "actorKeyValueStoreSchemaVersion": 1,
+    "title": "Tomba Company Search storage",
+    "description": "Records the Actor keeps in its default key-value store. Results are in the dataset.",
+    "collections": {
+        "input": {
+            "title": "Input",
+            "description": "The input of this run.",
+            "key": "INPUT",
+            "contentTypes": ["application/json"]
+        },
+        "progress": {
+            "title": "Progress",
+            "description": "Result pages already processed, so a migrated or restarted run continues at the next page without charging again.",
+            "key": "TOMBA_STATE",
+            "contentTypes": ["application/json"],
+            "jsonSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                    "done": {
+                        "type": "object",
+                        "description": "Processed pages (`page:<number>`) mapped to true",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "required": ["done"]
+            }
+        },
+        "companiesSaved": {
+            "title": "Companies saved",
+            "description": "Number of companies saved so far, so a resumed run still honours maxResults.",
+            "key": "COMPANY_SEARCH_PROGRESS",
+            "contentTypes": ["application/json"],
+            "jsonSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                    "pushed": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Companies saved to the dataset"
+                    }
+                },
+                "required": ["pushed"]
+            }
+        }
+    }
+}

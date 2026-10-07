@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { after, afterEach, describe, it } from 'node:test';
 
 import type { MockHandler, MockRequest, MockServer } from './helpers.js';
-import { removeStorage, runActor, startMockTomba, totalCharges } from './helpers.js';
+import { removeStorage, runActor, startMockTomba, startStandbyActor, totalCharges } from './helpers.js';
 
 const PAGE_SIZE = 10;
 
@@ -332,5 +332,127 @@ describe('company-search', () => {
         assert.notEqual(result.code, 0);
         assert.match(result.output, /query/);
         assert.equal(server.requests.length, 0);
+    });
+});
+
+describe('company-search standby (real-time API)', () => {
+    it('answers the readiness probe and a bare GET with usage info', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url });
+        try {
+            const probe = await actor.call('/', { headers: { 'x-apify-container-server-readiness-probe': '1' } });
+            assert.equal(probe.status, 200);
+            const usage = await actor.call('/');
+            assert.equal(usage.status, 200);
+            assert.match(String(usage.body.usage), /GET/);
+            assert.equal(server.requests.length, 0);
+        } finally {
+            await actor.stop();
+        }
+    });
+
+    it('searches from GET query parameters and charges one event per page', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url });
+        let stopped;
+        try {
+            const filters = encodeURIComponent(JSON.stringify({ industry: { include: ['software'] } }));
+            const res = await actor.call(`/?query=tech&filters=${filters}&source=name,website_url&maxResults=15`);
+            assert.equal(res.status, 200);
+            const items = res.body.items as Record<string, unknown>[];
+            assert.equal(items.length, 15);
+            assert.equal(items[14].name, 'Company 15');
+            assert.deepEqual(server.requests[0].body, {
+                query: 'tech',
+                filters: { industry: { include: ['software'] } },
+                _source: ['name', 'website_url'],
+                page: 1,
+            });
+            assert.deepEqual(pagesRequested(server), [1, 2]);
+        } finally {
+            stopped = await actor.stop();
+        }
+        assert.deepEqual(stopped.chargeCounts, { 'tomba-request': 2 });
+    });
+
+    it('accepts a POST with the same JSON input as a normal run', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url });
+        try {
+            const res = await actor.call('/', {
+                body: { filters: { size: { include: ['51-200'] } }, page: 2, maxResults: 5 },
+            });
+            assert.equal(res.status, 200);
+            const items = res.body.items as Record<string, unknown>[];
+            assert.equal(items.length, 5);
+            assert.equal(items[0].name, 'Company 11');
+            assert.deepEqual(pagesRequested(server), [2]);
+        } finally {
+            await actor.stop();
+        }
+    });
+
+    it('serves repeated requests from the cache for free', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url });
+        let stopped;
+        try {
+            await actor.call('/?query=tech&maxResults=10');
+            const second = await actor.call('/?query=tech&maxResults=10');
+            assert.ok((second.body.items as Record<string, unknown>[]).every((i) => i.cached === true));
+            assert.equal(server.requests.length, 1);
+        } finally {
+            stopped = await actor.stop();
+        }
+        assert.deepEqual(stopped.chargeCounts, { 'tomba-request': 1 });
+    });
+
+    it('keeps serving after a request hits maxResults', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url });
+        try {
+            const first = await actor.call('/?query=big&maxResults=5');
+            assert.equal((first.body.items as unknown[]).length, 5);
+            const second = await actor.call('/?query=big&maxResults=25');
+            assert.equal((second.body.items as unknown[]).length, 25);
+            assert.deepEqual(pagesRequested(server), [1, 2, 3]);
+        } finally {
+            await actor.stop();
+        }
+    });
+
+    it('rejects invalid input with 400 and unknown paths with 404', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url });
+        try {
+            assert.equal((await actor.call('/', { body: {} })).status, 400);
+            assert.equal((await actor.call('/', { body: 'not json' })).status, 400);
+            assert.equal((await actor.call('/?query=tech&maxResults=abc')).status, 400);
+            const badFilters = await actor.call('/?filters=notjson');
+            assert.equal(badFilters.status, 400);
+            assert.match(String(badFilters.body.error), /filters/);
+            assert.equal((await actor.call(`/?filters=${encodeURIComponent('[1]')}`)).status, 400);
+            assert.equal((await actor.call('/?page=1')).status, 400);
+            assert.equal((await actor.call('/nope')).status, 404);
+            assert.equal((await actor.call('/', { method: 'DELETE' })).status, 405);
+            assert.equal(server.requests.length, 0);
+        } finally {
+            await actor.stop();
+        }
+    });
+
+    it('returns 402 once the max charge limit is reached', async () => {
+        const server = await mock();
+        const actor = await startStandbyActor({ endpoint: server.url, maxTotalChargeUsd: 1 });
+        try {
+            const first = await actor.call('/?query=tech&maxResults=30');
+            assert.equal(first.status, 200);
+            assert.equal((first.body.items as unknown[]).length, 10);
+            const second = await actor.call('/?query=other');
+            assert.equal(second.status, 402);
+            assert.equal(server.requests.length, 1);
+        } finally {
+            await actor.stop();
+        }
     });
 });

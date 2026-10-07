@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-run result cache (`useCache`, `cacheTtlHours`)
 - Resume after migration or restart (continues from the next page)
 - Each dataset item now includes `charged` and `cached`; a failed or empty search saves an item with `error`
+- Standby mode: real-time HTTP API (`GET /?query=…` or `POST /` with the run input) with an OpenAPI web server schema
+- Key-value store schema for `INPUT`, `TOMBA_STATE` and `COMPANY_SEARCH_PROGRESS`
+- 256 MB default memory
 
 ### Dependencies
 

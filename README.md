@@ -165,6 +165,26 @@ Every row shows `charged` and `cached`, so you always know what you paid for. To
 - **Resumable**: if a run is interrupted, it continues from the next page without charging you again
 - **Cache**: repeat searches within 24 hours are free
 
+## Real-time API
+
+Need results instantly inside your own app? This Actor also runs as a **real-time API** (Apify Standby mode): no run to start, no dataset to fetch, just an HTTP request that returns JSON in seconds. Pricing is the same.
+
+```bash
+curl "https://<your-standby-url>/?query=technology%20companies%20in%20san%20francisco&maxResults=20&source=name,website_url,industry" \
+  -H "Authorization: Bearer <YOUR_APIFY_TOKEN>"
+```
+
+Pass `filters` as URL-encoded JSON, e.g. `&filters=%7B%22industry%22%3A%7B%22include%22%3A%5B%22software%22%5D%7D%7D`. Or simply `POST` the same JSON input as a normal run:
+
+```bash
+curl -X POST "https://<your-standby-url>/" \
+  -H "Authorization: Bearer <YOUR_APIFY_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "technology companies", "filters": {"location_country": {"include": ["US"]}, "size": {"include": ["51-200"]}}, "maxResults": 20}'
+```
+
+The response is `{ "items": [...] }`, with the same rows as the dataset. Find your Standby URL and the full OpenAPI description in the **API** tab of this Actor.
+
 ## Integrations
 
 Run it on a schedule, call it from the Apify API, or connect it to Zapier, Make, Google Sheets, HubSpot, Slack and hundreds of other apps with [Apify integrations](https://docs.apify.com/platform/integrations). Webhooks let you trigger your own workflow as soon as a run finishes.
